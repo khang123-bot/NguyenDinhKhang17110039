@@ -1,0 +1,163 @@
+﻿
+
+@model IEnumerable<HireCar.Models.RentViewModel>
+<div class="row">
+    <div class="col-sm-4">
+
+
+
+        @using (Html.BeginForm("Save", "Rent", FormMethod.Post, new { id = "popupForm" }))
+        {
+            <div>
+                <h1>Car Rentail</h1>
+            </div>
+
+
+            <div class="form-group">
+                <label class="form-label">Car Number</label>
+                <select class="form-control" id="carid" name="carid" placeholder="CarNumber" required>
+                    <option>Please Select</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Customer ID</label>
+                <input type="text" id="customerid" name="customerid" class="form-control" placeholder="CustID" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Customer Name</label>
+                <input type="text" id="customername" name="customername" class="form-control" placeholder="CustName" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Rent Fee</label>
+                <input type="text" id="fee" name="fee" class="form-control" placeholder="Retail Fee" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Start Date</label>
+                <input type="date" id="sdate" name="sdate" class="form-control" placeholder="Start Date" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">End Date</label>
+                <input type="date" id="edate" name="edate" class="form-control" placeholder="End date" required>
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-success" />
+            </div>
+        }
+
+
+
+    </div>
+        
+    <div class="col-sm-8">
+        <table class="table">
+            <tr>
+                <th>Car Number</th>
+                <th>Customer ID</th>
+                <th>Fee</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Available</th>
+            </tr>
+
+            @foreach(var item in Model)
+            {
+            <tr>
+                <td>@item.carid</td>
+                <td>@item.customerid</td>
+                <td>@item.fee</td>
+                <td>@item.sdate</td>
+                <td>@item.edate</td>
+                <td>@item.available</td>
+            </tr>
+            }
+
+
+        </table>
+
+
+    </div>
+
+    </div>
+
+    @section scripts
+{
+        <script src="~/Scripts/jquery-3.3.1.js"></script>
+        <script src="~/Scripts/jquery-3.3.1.min.js"></script>
+        <script src="~/Scripts/jquery.validate.js"></script>
+        <script>
+            getCar();
+            load();
+            function load() {
+                $("#customerid").attr("disabled", "disabled");
+                $("#customername").attr("disabled", "disabled");
+                $("#fee").attr("disabled", "disabled");
+                $("#sdate").attr("disabled", "disabled");
+                $("#edate").attr("disabled", "disabled");
+            }
+            function getCar() {
+                $.ajax({
+                    type: "GET",
+                    url: '/rent/getCar',
+                    dataType: 'JSON',
+                    success: function (data) {
+                        console.log(data);
+                        for (var i = 0; i < data.length; i++) {
+                            $("#carid").append($("<option/>", {
+                                text: data[i].carNumber
+                            }));
+                        }
+                    }
+                });
+            }
+            $("#carid").change(function () {
+                available();
+            });
+
+            function available() {
+                $.ajax({
+                    type: "POST",
+                    url: '/rent/Getavil?carid=' + $("#carid").val(),
+                    dataType: 'JSON',
+                    success: function (data) {
+                        console.log(data)
+                        var aval = data;
+                        if (aval == "yes") {
+                            $("#customerid").removeAttr('disabled');
+                            $("#customername").removeAttr('disabled');
+                            $("#fee").removeAttr('disabled');
+                            $("#sdate").removeAttr('disabled');
+                            $("#edate").removeAttr('disabled');
+                        }
+                        else {
+                            $("#customerid").attr("disabled", "disabled");
+                            $("#customername").attr("disabled", "disabled");
+                            $("#fee").attr("disabled", "disabled");
+                            $("#sdate").attr("disabled", "disabled");
+                            $("#edate").attr("disabled", "disabled");
+                        }
+                    }
+                });
+            }
+            getCustomer();
+            function getCustomer() {
+                $("#customerid").keyup(function (e) {
+                    $.ajax({
+                        type: "POST",
+                        url: '/rent/Getid?id=' + $("#customerid").val(),
+                        dataType: 'JSON',
+                        success: function (data) {
+                            console.log(data)
+
+                            $("#customername").val(data)
+                        }
+                    });
+                });
+            }
+        </script>
+    }
